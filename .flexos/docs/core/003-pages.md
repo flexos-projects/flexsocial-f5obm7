@@ -1,79 +1,62 @@
 ---
-id: "003-pages"
-title: "Pages & Navigation"
+id: pages
+title: Pages & User Interface
+description: A sitemap and description of the primary pages and UI components in flexSocial.
 type: doc
 subtype: core
 status: draft
 sequence: 3
-tags: [pages, navigation, sitemap, ux]
+tags:
+  - ui
+  - ux
+  - sitemap
+createdAt: "2023-10-27T10:00:00.000Z"
+updatedAt: "2023-10-27T10:00:00.000Z"
 ---
 
-# Pages & Navigation
+This document outlines the key pages and user interface structure of the flexSocial application. It provides a blueprint for the user's journey through the platform, referencing features described in the **Core Features** document.
 
-> Every screen in the product, how users move between them, and what each page does. This is the blueprint for the user experience.
+## 1. Public Pages
 
-## Site Map
+*   **`/` (Landing Page):** The main marketing page. It will clearly articulate the value proposition from the **Vision** document, showcase key features, display pricing tiers, and have prominent call-to-action buttons for signing up.
+*   **`/login`:** User login page with email/password and social sign-on options (Google, etc.).
+*   **`/signup`:** User registration page.
 
-The complete URL structure of the application. Include public and authenticated routes.
+## 2. Onboarding
 
-```
-/                       Landing page (public)
-/login                  Authentication (public)
-/signup                 Registration (public)
-/dashboard              Main app view (auth required)
-/settings               User settings (auth required)
-/[resource]/[id]        Detail views (auth required)
-```
+*   **`/onboarding/persona`:** A multi-step wizard that guides new users through the initial setup of their **Persona Engine**. This is a critical flow for user success.
+    *   **Step 1: Basics:** Set display name, and upload a profile picture.
+    *   **Step 2: Knowledge Ingestion:** A component with tabs for URL input, document upload, and direct text input. We will encourage users to provide at least one significant source (e.g., their personal website) to start.
+    *   **Step 3: Goals & Style:** The interface for the **Goal & Style Configuration**, including the goal selector and tone sliders.
+    *   **Step 4: Connect Accounts:** The UI for the **Account Connector** to link their social media profiles via OAuth.
 
-## Page Inventory
+## 3. Core Application Pages (Authenticated)
 
-For each page, document:
+All core app pages will share a persistent navigation sidebar for easy access to key areas.
 
-### Landing Page (`/`)
+*   **`/dashboard` (Home):** The main landing page after login. It serves as a central hub.
+    *   **Component: Quick Add to Stream:** A prominent form at the top of the page for quickly adding new `raw_content` (URL, text, or media upload) and setting the `Intent`.
+    *   **Component: "For Review" Queue:** A compact list or carousel showing the top 3-5 Flexes currently in the `For Review` status, prompting the user to take action.
+    *   **Component: Scheduled Posts:** A calendar or timeline view of upcoming posts.
+    *   **Component: Recent Performance:** A small module with high-level analytics from the last 7 days.
 
-- **Purpose:** First impression, conversion
-- **Auth required:** No
-- **Key sections:** Hero, features, social proof, CTA
-- **Data sources:** Static content, testimonials
-- **Actions available:** Sign up, learn more, view demo
-- **Mobile behavior:** Stacked layout, sticky CTA
+*   **`/stream`:** A dedicated page for managing the `raw_content` feed. 
+    *   It will display a reverse-chronological list of all submitted items.
+    *   Each item will be a card showing the content, the user's selected `Intent` and `Intensity`, and a status indicator (e.g., "Processing," "Flexes Generated").
+    *   A persistent "Add to Stream" button will be present.
 
-### Dashboard (`/dashboard`)
+*   **`/studio` (The Flex Studio):** The workspace for managing generated content.
+    *   **Default View: Kanban Board:** The primary interface will be a multi-column board representing the content pipeline: `Drafts`, `For Review`, `Scheduled`, `Published`.
+    *   **Flex Cards:** Each card on the board represents a single Flex and will display a snippet of the generated text, a media preview, and icons for the target social platforms.
+    *   **Flex Detail View:** Clicking a card will open a modal or a dedicated page (`/studio/:flexId`). This view contains the **Multi-Platform Optimizer** interface, with tabs for each social network. Each tab shows the tailored content and provides options to edit, approve, or discard the suggestion.
 
-- **Purpose:** Main workspace after login
-- **Auth required:** Yes
-- **Key sections:** (describe the primary view)
-- **Data sources:** (which collections/APIs feed this page)
-- **Actions available:** (what can users do here)
-- **Mobile behavior:** (how does it adapt)
+*   **`/analytics`:** The **Performance Dashboard** page.
+    *   Will feature filterable charts and data visualizations for engagement metrics over time.
+    *   Users can filter by social account, content type, or the original `Intent` to understand what resonates with their audience.
 
-(Continue for each page...)
-
-## User Journeys
-
-### First-Time User Journey
-
-Walk through what a brand new user experiences from landing page to first "aha moment." Every click, every page transition, every loading state.
-
-1. User lands on `/` → sees hero + CTA
-2. Clicks "Get Started" → navigates to `/signup`
-3. (continue step by step...)
-
-### Core Action Journey
-
-The primary thing users come back to do. The happy path through the main feature.
-
-### Settings/Admin Journey
-
-How users configure their account, manage settings, handle billing.
-
-## Navigation Patterns
-
-- **Desktop:** (sidebar, top nav, breadcrumbs?)
-- **Mobile:** (bottom tabs, hamburger, swipe?)
-- **Transitions:** (page transitions, loading states)
-- **Deep linking:** (which pages support direct URLs)
-
-## Authentication Gates
-
-Which pages are public vs authenticated? What happens when an unauthenticated user hits a protected route?
+*   **`/settings`:** A multi-tabbed page for account management.
+    *   **`/settings/profile`:** Manage basic account information (name, email, password).
+    *   **`/settings/persona`:** A page to edit and add to the **Persona Engine**. Users can add new knowledge sources or re-run the AI analysis.
+    *   **`/settings/style`:** A page to adjust the **Goal & Style Configuration** settings.
+    *   **`/settings/accounts`:** Manage connected social media accounts (add new ones, re-authenticate, or remove).
+    *   **`/settings/billing`:** Manage subscription plan and payment information.

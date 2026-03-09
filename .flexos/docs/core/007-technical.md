@@ -1,99 +1,72 @@
 ---
-id: "007-technical"
-title: "Technical Architecture"
+id: technical
+title: Technical Architecture
+description: An overview of the proposed technology stack, infrastructure, and architecture.
 type: doc
 subtype: core
 status: draft
 sequence: 7
-tags: [technical, architecture, stack, deployment]
+tags:
+  - architecture
+  - technical
+  - stack
+createdAt: "2023-10-27T10:00:00.000Z"
+updatedAt: "2023-10-27T10:00:00.000Z"
 ---
 
-# Technical Architecture
+## 1. Guiding Principles
 
-> How the product is built, deployed, and maintained. The engineer's reference document.
+Our technical architecture is guided by the need for scalability, rapid development, and cost-effective management of AI-intensive workloads.
 
-## Tech Stack
+*   **Serverless First:** We will leverage serverless functions and managed services wherever possible to reduce operational overhead and scale automatically with user demand.
+*   **Asynchronous Processing:** AI tasks and data ingestion are long-running processes. They will be handled asynchronously using background jobs and message queues to ensure the user interface remains responsive.
+*   **Managed Services:** We will prefer managed services for databases, authentication, and AI model hosting to focus our development efforts on core application logic.
+*   **Infrastructure as Code (IaC):** All infrastructure will be defined in code (e.g., using Terraform or AWS CDK) for reproducibility and version control.
 
-| Layer | Technology | Why |
-|-------|-----------|-----|
-| Framework | Nuxt 4 | Full-stack Vue, SSR, file-based routing |
-| Database | Firestore | Real-time, serverless, scales automatically |
-| Auth | Firebase Auth | Email/password, social login, session management |
-| Hosting | Vercel | Edge deployment, preview deploys, serverless functions |
-| Storage | Vercel Blob | File uploads, images, assets |
-| Styling | UnoCSS / Tailwind | Utility-first, design token integration |
+## 2. Proposed Technology Stack
 
-## Architecture Overview
+*   **Frontend:**
+    *   **Framework:** Next.js (React). Chosen for its hybrid rendering capabilities (SSR/SSG for marketing pages, CSR for the authenticated app), strong ecosystem, and developer experience.
+    *   **Styling:** Tailwind CSS. A utility-first CSS framework that allows for rapid UI development and easy implementation of our **Design System**.
+    *   **State Management:** React Query (TanStack Query) for server state management, caching, and data fetching. Zustand or Jotai for simple global client state.
 
-Describe the high-level architecture — client/server split, data flow, caching strategy.
+*   **Backend:**
+    *   **Runtime:** Node.js with TypeScript. Provides a consistent language across the stack and strong typing for maintainability.
+    *   **Framework:** We will use Next.js API Routes for simple CRUD operations. For more complex, asynchronous tasks, we will use dedicated serverless functions.
+    *   **Hosting:** Vercel for the Next.js application and serverless functions. Vercel provides a seamless CI/CD pipeline and global CDN.
 
-### Client
+*   **Database & Storage:**
+    *   **Primary Database:** MongoDB Atlas or Amazon DocumentDB. A managed NoSQL database that aligns well with our flexible data models (see **Database Schema**).
+    *   **Vector Database:** Pinecone. A managed vector database optimized for high-performance similarity search, which is critical for our RAG-based **Persona Engine**.
+    *   **File Storage:** AWS S3 or Cloudflare R2 for storing user-uploaded files (documents, images, videos).
 
-- Nuxt 4 SPA with SSR for public pages
-- Vue 3 Composition API throughout
-- State management via composables (not Pinia unless complex)
-- File-based routing with middleware for auth gates
+*   **Authentication:**
+    *   **Provider:** NextAuth.js or Clerk. These services handle the complexities of authentication, including social sign-on, session management, and security, integrating seamlessly with Next.js.
 
-### Server
+## 3. AI & Asynchronous Processing Architecture
 
-- Nuxt server routes (server/api/)
-- Firebase Admin SDK for privileged operations
-- Server-side rendering for SEO-critical pages
-- Edge functions for API routes
+This is the core of the flexSocial application and is detailed in the **User & Data Flows** document. The architecture will be event-driven.
 
-### Data Flow
+1.  **Trigger:** A user creates a new `raw_content` document in the primary database.
+2.  **Queue:** This database write triggers an event that places a message onto a message queue (e.g., AWS SQS or Vercel's upcoming queueing solution). The message contains the ID of the `raw_content` document.
+3.  **Worker:** A dedicated serverless function (an "AI Worker") is subscribed to this queue. This function has a longer execution timeout (e.g., 5-15 minutes) suitable for AI tasks.
+4.  **Processing:** The AI Worker executes the logic described in Flow 2:
+    *   Fetches the `raw_content`, `persona`, and `social_connections` data.
+    *   Queries the Pinecone vector database to retrieve relevant persona context.
+    *   Constructs a detailed prompt.
+    *   Calls an external LLM API (e.g., OpenAI's GPT-4 or Anthropic's Claude 2). We will use an abstraction layer to potentially switch between models based on cost/performance.
+    *   Parses the LLM response.
+    *   Writes the resulting `flexes` documents back to the primary database.
 
-```
-Client → Nuxt Server Routes → Firestore
-         ↕                     ↕
-      Firebase Auth         Cloud Functions (if needed)
-```
+## 4. Third-Party Services & APIs
 
-## API Routes
+*   **LLM Provider:** OpenAI (initially, for GPT-4's quality) or Anthropic. We will monitor the market for more specialized or cost-effective models.
+*   **Embedding Model:** OpenAI's `text-embedding-ada-002`.
+*   **Social Media APIs:** Twitter API, LinkedIn API, Facebook Graph API, etc. All API calls will be made from the backend to protect credentials.
+*   **Payment Processing:** Stripe for managing user subscriptions and billing.
+*   **Job Scheduling:** A cron job service (e.g., Vercel Cron Jobs or an external service like Trigger.dev) will be used to manage the posting of scheduled content.
 
-List every API endpoint the product needs:
+## 5. Deployment & CI/CD
 
-| Method | Path | Purpose | Auth |
-|--------|------|---------|------|
-| POST | /api/auth/login | Authenticate user | No |
-| GET | /api/[resource] | List resources | Yes |
-| POST | /api/[resource] | Create resource | Yes |
-| (continue...) | | | |
-
-## Authentication
-
-- **Method:** Firebase Auth (email/password + Google OAuth)
-- **Session:** HTTP-only cookie with Firebase session token
-- **Middleware:** `auth.ts` middleware checks session on protected routes
-- **Token refresh:** Automatic via Firebase SDK
-
-## Environment Variables
-
-| Variable | Purpose | Required |
-|----------|---------|----------|
-| `FIREBASE_PROJECT_ID` | Firebase project | Yes |
-| `FIREBASE_CLIENT_EMAIL` | Service account | Yes |
-| `FIREBASE_PRIVATE_KEY` | Service account | Yes |
-| (continue...) | | |
-
-## Deployment
-
-- **Production:** Vercel, auto-deploy from `main` branch
-- **Preview:** Vercel preview deploys on every PR
-- **Database:** Firestore production instance
-- **CI/CD:** GitHub Actions for linting, type-checking, tests
-
-## Performance Targets
-
-- **First Contentful Paint:** < 1.5s
-- **Time to Interactive:** < 3s
-- **Lighthouse Score:** > 90 (performance, accessibility)
-- **API Response Time:** < 200ms (p95)
-
-## Security Considerations
-
-- All API routes validate input (Zod schemas)
-- Firestore security rules enforce per-document access
-- CORS configured for production domain only
-- Rate limiting on auth endpoints
-- No secrets in client bundle
+*   **Hosting:** Vercel will host the frontend and serverless API functions.
+*   **CI/CD:** A Git-based workflow. Pushing to the `main` branch will trigger an automatic deployment to production via the Vercel for GitHub integration. Pull requests will generate unique preview deployments for testing.

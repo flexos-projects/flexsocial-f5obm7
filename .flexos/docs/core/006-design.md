@@ -1,111 +1,66 @@
 ---
-id: "006-design"
-title: "Design System"
+id: design
+title: Design System & Branding
+description: Guidelines for the visual identity, branding, and UI components of flexSocial.
 type: doc
 subtype: core
 status: draft
 sequence: 6
-tags: [design, brand, colors, typography, components]
+tags:
+  - design
+  - branding
+  - ui
+createdAt: "2023-10-27T10:00:00.000Z"
+updatedAt: "2023-10-27T10:00:00.000Z"
 ---
 
-# Design System
+## 1. Brand Identity & Philosophy
 
-> The visual identity and component language of the product. Everything a designer or developer needs to build consistent UI.
+The flexSocial brand should feel empowering, intelligent, and minimalist. It's a professional tool for creative people, so the design must be clean and functional, allowing the user's content to take center stage. The aesthetic is inspired by modern productivity apps and creative software—think Notion meets Figma. We avoid the loud, attention-grabbing design language of social media platforms themselves.
 
-## Brand Voice
+*   **Keywords:** Authentic, Smart, Effortless, Clean, Focused, Creative.
+*   **Logo:** A simple, abstract mark that combines the letter 'f' with a subtle 'S' curve or a visual representation of a 'flex' or 'flow'. It should be modern and geometric.
 
-How does this product speak? Describe the tone, personality, and communication style:
+## 2. Color Palette
 
-- **Tone:** (professional, casual, playful, authoritative?)
-- **Voice:** (first person, second person, third person?)
-- **Personality traits:** (3-4 adjectives that describe the brand)
-- **Do:** (examples of on-brand copy)
-- **Don't:** (examples of off-brand copy)
+Our color palette is built around a single, vibrant primary color to create a strong brand association, balanced by a sophisticated and muted set of neutrals for the UI.
 
-## Color System
+*   **Primary:** `#10b981` (Emerald Green)
+    *   **Usage:** Call-to-action buttons, active states, links, key highlights, and branding elements. It signifies growth, intelligence, and 'go'.
+*   **Neutral Palette (Dark Mode First):**
+    *   **Background:** `#0f172a` (Slate-900) - A very dark, slightly blue-tinted gray.
+    *   **UI Panels/Cards:** `#1e293b` (Slate-800) - The primary surface color for cards and sidebars.
+    *   **Borders/Dividers:** `#334155` (Slate-700) - For subtle separation between elements.
+    *   **Text (Primary):** `#f1f5f9` (Slate-100) - For headings and important text.
+    *   **Text (Secondary):** `#94a3b8` (Slate-400) - For body copy, labels, and less important text.
+*   **Accent Colors:**
+    *   **Warning/Alert:** `#f59e0b` (Amber-500)
+    *   **Error/Destructive:** `#ef4444` (Red-500)
+    *   **Success:** `#22c55e` (Green-500)
 
-### Primary Palette
+## 3. Typography
 
-- **Primary:** #000000 (main brand color, used for CTAs and key elements)
-- **Accent:** #000000 (complementary color for highlights and secondary actions)
+We will use a clean, modern, and highly legible sans-serif typeface available via a service like Google Fonts to ensure consistency.
 
-### Neutral Palette
+*   **Primary Typeface:** Inter
+*   **Headings (`h1`, `h2`, `h3`):** Inter Bold (or SemiBold). Sizing will follow a modular scale (e.g., 36px, 24px, 20px).
+*   **Body & UI Text:** Inter Regular. Base font size will be 16px for readability.
+*   **Code/Monospace:** A monospaced font like `Fira Code` or `JetBrains Mono` can be used for any code-like text or to display hashtags for clarity.
 
-- **Dark:** #000000 (text, headings)
-- **Medium:** #000000 (secondary text, borders)
-- **Light:** #000000 (backgrounds, cards)
-- **White:** #ffffff (page background)
+## 4. UI Components
 
-### Semantic Colors
+We will build a library of reusable UI components to ensure a consistent user experience across the application, as described in the **Pages** document.
 
-- **Success:** #22c55e
-- **Warning:** #f59e0b
-- **Error:** #ef4444
-- **Info:** #3b82f6
+*   **Buttons:**
+    *   **Primary:** Solid `primary` color background with light text.
+    *   **Secondary:** Outlined with `primary` color, transparent background.
+    *   **Tertiary/Ghost:** No border or background, just colored text.
+*   **Cards:** The primary container for content like Flexes and Stream items. They will have a subtle border (`#334155`), a slightly lighter background (`#1e293b`), and a `border-radius` of 8-12px for a modern, soft look.
+*   **Forms & Inputs:** Clean and simple. Inputs will have a dark background, a subtle border, and a clear focus state using the `primary` color. Labels will be placed above the input field.
+*   **Modals:** Used for focused tasks like the Flex Detail View. They will appear over a semi-transparent dark overlay to focus the user's attention.
+*   **Kanban Board (Flex Studio):** This is a key UI pattern. Columns will be clearly labeled, and cards will be draggable. We will use subtle visual cues (like a colored left border on the card) to indicate status or platform.
+*   **The Intent Engine UI:** This is a signature component. It will be a custom-designed control featuring three distinct buttons for `Agree`, `Disagree`, `Promote`. When one is selected, a horizontal slider appears below it to set the `Intensity`, providing clear visual feedback.
 
-### Color Usage
+## 5. Iconography
 
-- Primary is used for: CTAs, links, active states, primary navigation
-- Accent is used for: secondary buttons, highlights, badges
-- Never use more than 3 colors on a single component
-
-## Typography
-
-### Font Stack
-
-- **Headings:** (font family, weights used)
-- **Body:** (font family, weights used)
-- **Mono:** (font family, for code/data)
-
-### Scale
-
-| Level | Size | Weight | Line Height | Use |
-|-------|------|--------|-------------|-----|
-| H1 | 2.5rem | 700 | 1.2 | Page titles |
-| H2 | 2rem | 600 | 1.3 | Section headers |
-| H3 | 1.5rem | 600 | 1.4 | Card titles |
-| Body | 1rem | 400 | 1.6 | Paragraphs |
-| Small | 0.875rem | 400 | 1.5 | Captions, labels |
-
-## Component Patterns
-
-### Buttons
-
-- Primary: filled with primary color, white text
-- Secondary: outlined with primary color
-- Ghost: text only, no background
-- Sizes: sm (32px), md (40px), lg (48px)
-- All buttons have minimum 44px touch target on mobile
-
-### Cards
-
-- Background: white (light mode) / dark neutral (dark mode)
-- Border radius: 12px
-- Padding: 16px (mobile), 24px (desktop)
-- Shadow: subtle on hover
-
-### Forms
-
-- Labels above inputs
-- Inline validation messages below fields
-- Input height: 44px minimum (mobile touch target)
-- Focus state: primary color ring
-
-## Layout Patterns
-
-- **Desktop:** Sidebar (240px) + main content area
-- **Tablet:** Collapsible sidebar + full-width content
-- **Mobile:** Bottom navigation (56px) + full-width content
-- **Max content width:** 1200px, centered
-
-## Spacing System
-
-Base unit: 4px. Use multiples: 4, 8, 12, 16, 24, 32, 48, 64, 96.
-
-## Accessibility
-
-- Minimum contrast ratio: 4.5:1 (AA) for body text, 3:1 for large text
-- Focus indicators on all interactive elements
-- Touch targets minimum 44x44px
-- Screen reader support for all dynamic content
-- Reduced motion support via `prefers-reduced-motion`
+We will use a single, consistent icon set (e.g., Heroicons or Feather Icons) for all UI iconography. Icons should be minimalist and line-based to match the overall aesthetic. Social media platform icons will use their official brand logos.

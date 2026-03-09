@@ -1,73 +1,174 @@
 ---
-id: "004-database"
-title: "Database & Data Model"
+id: database
+title: Database Schema
+description: The proposed data models and collections for the flexSocial application.
 type: doc
 subtype: core
 status: draft
 sequence: 4
-tags: [database, schema, collections, data]
+tags:
+  - database
+  - schema
+  - technical
+createdAt: "2023-10-27T10:00:00.000Z"
+updatedAt: "2023-10-27T10:00:00.000Z"
 ---
 
-# Database & Data Model
+This document outlines the preliminary database schema for flexSocial. We will use a NoSQL document database (like MongoDB or Firestore) to accommodate the flexible and nested nature of our data. All collections are designed with user data isolation in mind, typically partitioned by `userId`.
 
-> Every piece of data the product stores, how it's structured, and how it relates. This is the foundation for the backend.
+### Core Collections
 
-## Database Choice
+**1. `users`**
 
-Which database and why. Default: Firestore (NoSQL, real-time, serverless). Document any reasons to deviate.
+Stores essential user account information.
 
-## Collection Inventory
+```json
+{
+  "_id": "userId_abc123",
+  "email": "artist@example.com",
+  "hashedPassword": "...",
+  "displayName": "John Artist",
+  "profileImageUrl": "...",
+  "subscription": {
+    "plan": "pro",
+    "status": "active",
+    "endDate": "2024-11-27T10:00:00Z"
+  },
+  "createdAt": "2023-10-27T10:00:00Z",
+  "updatedAt": "..."
+}
+```
 
-List every collection/table in the system with a one-line description:
+**2. `personas`**
 
-| Collection | Description | Primary Key |
-|-----------|-------------|-------------|
-| `users` | User accounts and profiles | auto-generated |
-| (add collections...) | | |
+Stores the configuration and knowledge base for a user's AI persona. Each user has one primary persona document.
 
-## Schema Definitions
+```json
+{
+  "_id": "personaId_def456",
+  "userId": "userId_abc123",
+  "knowledgeSources": [
+    { "type": "url", "value": "https://my-art-blog.com", "status": "processed" },
+    { "type": "file", "storagePath": "/brand_guide.pdf", "status": "processed" },
+    { "type": "text", "value": "My core mission is to...", "status": "processed" }
+  ],
+  "styleConfiguration": {
+    "goal": "establish_thought_leadership",
+    "tone": {
+      "formality": 0.8, // 0=casual, 1=professional
+      "humor": 0.2,
+      "complexity": 0.7
+    },
+    "emojiUsage": "low"
+  },
+  "coreHashtags": ["#DigitalArt", "#CreativeCoding", "#AIart"],
+  "visuals": {
+    "logoUrl": "...",
+    "colorPalette": ["#10b981", "#0f172a", "#ffffff"]
+  },
+  "updatedAt": "..."
+}
+```
 
-For each collection, define the full schema:
+**3. `raw_content`**
 
-### `users`
+This collection holds every piece of content the user inputs into "The Stream".
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `id` | string | yes | Auto-generated document ID |
-| `email` | string | yes | User's email address |
-| `displayName` | string | yes | Display name |
-| `createdAt` | timestamp | yes | Account creation time |
-| `updatedAt` | timestamp | yes | Last modification time |
+```json
+{
+  "_id": "rawId_ghi789",
+  "userId": "userId_abc123",
+  "type": "url", // url, text, image, video
+  "sourceValue": "https://techcrunch.com/some-article",
+  "intent": "disagree", // agree, disagree, promote
+  "intensity": 4, // 1 to 5
+  "userContext": "I think the author misses the point about decentralized AI...",
+  "status": "processed", // pending, processing, processed
+  "createdAt": "..."
+}
+```
 
-(Continue for each collection...)
+**4. `flexes`**
 
-## Relationships
+Stores the generated post stubs (Flexes) created by the AI from `raw_content`.
 
-How do collections reference each other? Document every foreign key relationship:
+```json
+{
+  "_id": "flexId_jkl012",
+  "userId": "userId_abc123",
+  "rawContentId": "rawId_ghi789",
+  "status": "for_review", // draft, for_review, scheduled, published, discarded
+  "baseSummary": "A critical take on the new TechCrunch article about AI...",
+  "platformOptimizations": [
+    {
+      "platform": "twitter", // twitter, linkedin, instagram
+      "content": "Short thread disagreeing with the latest TC article on AI. They claim X, but the reality is Y. 1/3",
+      "mediaUrls": [],
+      "hashtags": ["#AI", "#TechCritique"]
+    },
+    {
+      "platform": "linkedin",
+      "content": "A thoughtful analysis of the recent TechCrunch piece... While the article makes some valid points, it overlooks the critical impact of decentralized AI models. Here's my perspective...",
+      "mediaUrls": ["/generated_quote_graphic.png"],
+      "hashtags": ["#ArtificialIntelligence", "#Technology", "#FutureTech"]
+    }
+  ],
+  "createdAt": "..."
+}
+```
 
-- `posts.userId` → references `users.id` (one-to-many: one user has many posts)
-- (continue for all relationships...)
+**5. `scheduled_posts`**
 
-## Access Patterns
+Holds the final, user-approved posts that are scheduled for publishing.
 
-What queries does the application need? This determines indexes and security rules:
+```json
+{
+  "_id": "postId_mno345",
+  "userId": "userId_abc123",
+  "flexId": "flexId_jkl012",
+  "platform": "linkedin",
+  "content": "A thoughtful analysis...",
+  "mediaUrls": ["/generated_quote_graphic.png"],
+  "scheduledAt": "2023-11-05T14:00:00Z",
+  "status": "scheduled", // scheduled, posted, failed
+  "postResult": {
+    "postId": "linkedin_postId_xyz",
+    "postUrl": "..."
+  }
+}
+```
 
-| Query | Collection | Filters | Sort | Used By |
-|-------|-----------|---------|------|---------|
-| Get user's posts | `posts` | `userId == x` | `createdAt desc` | Dashboard |
-| (add queries...) | | | | |
+**6. `social_connections`**
 
-## Security Rules
+Securely stores OAuth tokens and connection details for user's social media accounts.
 
-Who can read/write what? Define per-collection:
+```json
+{
+  "_id": "connId_pqr678",
+  "userId": "userId_abc123",
+  "platform": "twitter",
+  "username": "@johnartist",
+  "profileId": "twitter_profile_id",
+  "encryptedAccessToken": "...",
+  "encryptedRefreshToken": "...",
+  "expiresAt": "...",
+  "status": "active", // active, expired
+  "createdAt": "..."
+}
+```
 
-- **users:** Owner can read/write own doc. Others can read displayName only.
-- (continue for each collection...)
+**7. `vectors`**
 
-## Indexes
+This is a specialized collection, likely in a dedicated vector database like Pinecone or Weaviate, storing the embeddings of the user's persona knowledge base for efficient AI retrieval.
 
-Based on access patterns, which composite indexes are needed?
-
-## Data Migration
-
-If this project was imported, document any data migration needs. What data exists in the old system? How does it map to the new schema?
+```json
+{
+  "_id": "vecId_stu901",
+  "userId": "userId_abc123",
+  "personaId": "personaId_def456",
+  "sourceType": "url",
+  "sourceValue": "https://my-art-blog.com/about",
+  "chunkText": "A snippet of text from the about page...",
+  "embedding": [0.0123, -0.0456, ... ] // High-dimensional vector
+}
+```
